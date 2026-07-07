@@ -3121,7 +3121,9 @@ async function boot(){
 
 async function loadProfile(user){
   _currentUser=user;
-  let {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  // Try reading profile
+  let {data:p,error:pErr}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  console.log('Profile read:',p,'error:',pErr);
   if(!p){
     const {data:np}=await sb.from('profiles').insert({
       id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true
@@ -3129,11 +3131,21 @@ async function loadProfile(user){
     p=np;
   }
   _userProfile=p;
-  const {data:perms}=await sb.rpc('get_user_permissions',{uid:user.id});
-  _userPerms={};
+  console.log('User role:',_userProfile?.role);
   const MODS=['dashboard','stock','deductions','restock','po','suppliers','costing','logs','admin_console'];
-  if(perms&&perms.length){perms.forEach(p=>{_userPerms[p.module]={view:p.can_view,edit:p.can_edit};});}
-  else if(_userProfile?.role==='admin'){MODS.forEach(m=>{_userPerms[m]={view:true,edit:true};});}
+  // Always give full access based on role — don't rely on RPC
+  const role=_userProfile?.role||'viewer';
+  if(role==='admin'){
+    MODS.forEach(m=>{_userPerms[m]={view:true,edit:true};});
+  } else if(role==='manager'){
+    MODS.filter(m=>m!=='admin_console').forEach(m=>{_userPerms[m]={view:true,edit:true};});
+  } else if(role==='stock_controller'){
+    ['dashboard','stock','deductions','restock','po','suppliers','costing','logs'].forEach(m=>{_userPerms[m]={view:true,edit:m!=='costing'&&m!=='suppliers'&&m!=='logs'};});
+  } else if(role==='store_keeper'){
+    ['dashboard','costing','logs'].forEach(m=>{_userPerms[m]={view:true,edit:false};});
+  } else {
+    ['dashboard','stock','costing','logs'].forEach(m=>{_userPerms[m]={view:true,edit:false};});
+  }
   sb.from('profiles').update({last_login:new Date().toISOString()}).eq('id',user.id);
 }
 
