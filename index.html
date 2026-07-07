@@ -1597,10 +1597,6 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
 </div>
 
 <script>
-
-// ── RAW DATA ──────────────────────────────────────────────────────
-// Items start empty
-
 const CAT={'Dairy Products':'b-dairy','Frozen Goods':'b-frozen','Chilled Goods':'b-chilled','Dry Goods':'b-dry','Vegetables & Fruits':'b-veg','Non-Food':'b-nonfood'};
 
 let items=[],cart={},txHistory=[],dedLog=[],rsLog=[],pos=[],alerts=[],nextId=1,poId=1,curPage=1,alertsOpen=false;
@@ -1611,23 +1607,7 @@ function genSKU(name,cat,id){
   const catCodes={'Dairy Products':'DAI','Frozen Goods':'FRZ','Chilled Goods':'CHL','Dry Goods':'DRY','Vegetables & Fruits':'VEG','Non-Food':'NFD'};
   const catCode=catCodes[cat]||'GEN';
   const nameCode=name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4).padEnd(4,'X');
-  return `NKI-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
-}
-// Items start empty
-RAW DATA ──────────────────────────────────────────────────────
-// Items start empty
-
-const CAT={'Dairy Products':'b-dairy','Frozen Goods':'b-frozen','Chilled Goods':'b-chilled','Dry Goods':'b-dry','Vegetables & Fruits':'b-veg','Non-Food':'b-nonfood'};
-
-let items=[],cart={},txHistory=[],dedLog=[],rsLog=[],pos=[],alerts=[],nextId=1,poId=1,curPage=1,alertsOpen=false;
-const PG=25;
-
-// build items — all start at qty 50
-function genSKU(name,cat,id){
-  const catCodes={'Dairy Products':'DAI','Frozen Goods':'FRZ','Chilled Goods':'CHL','Dry Goods':'DRY','Vegetables & Fruits':'VEG','Non-Food':'NFD'};
-  const catCode=catCodes[cat]||'GEN';
-  const nameCode=name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4).padEnd(4,'X');
-  return `NKI-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
+  return `CSP-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
 }
 (()=>{const s=new Set();Object.entries(RAW).forEach(([cat,list])=>list.forEach(([name,unit])=>{const k=name+'|'+cat;if(s.has(k))return;s.add(k);const id=nextId++;items.push({id,name,category:cat,unit,qty:50,threshold:10,supplier:'',sku:genSKU(name,cat,id)});}));})();
 
@@ -3119,6 +3099,7 @@ function initApp(){
 }
 // demo timer removed
 
+
 </script>
 
 <script>
@@ -3297,7 +3278,7 @@ async function loadAdminUsers(){
   const {data:subs}=await sb.from('subscriptions').select('*');
   const grid=document.getElementById('admin-users-grid');if(!grid)return;
   if(!users?.length){grid.innerHTML='<div style="color:#9ca3ba;padding:2rem;grid-column:1/-1">No users yet.</div>';return;}
-  let html='';
+  grid.innerHTML='';
   for(const u of users){
     const av=u.full_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const sub=subs?.find(s=>s.user_id===u.id);
@@ -3305,19 +3286,47 @@ async function loadAdminUsers(){
     const exp=sub?(sub.plan==='cancelled'||new Date(sub.expires_at)<new Date()):true;
     const subLabel=!sub?'No subscription':exp?'Expired':sub.plan==='monthly'?'Paid ('+dl+'d)':'Trial ('+dl+'d)';
     const subCls=!sub||exp?'sb-expired':sub.plan==='monthly'?'sb-monthly':'sb-trial';
-    html+='<div class="user-card"><div class="uc-top"><div class="uc-av">'+av+'</div>';
-    html+='<div><div class="uc-name">'+u.full_name+'</div>';
-    html+='<div style="margin-top:4px"><span class="rbadge rb-'+u.role+'">'+u.role.replace(/_/g,' ')+'</span> <span class="sub-badge '+subCls+'">'+subLabel+'</span></div></div></div>';
-    html+='<div class="uc-status"><div class="uc-dot '+(u.is_active?'uc-active':'uc-inactive')+'"></div><span>'+(u.is_active?'Active':'Suspended')+'</span></div>';
-    html+='<div class="uc-actions">';
-    html+='<button class="btn btn-sm" onclick="openEditUser(''+u.id+'')">Edit</button>';
-    if(sub&&!exp&&sub.plan==='trial')html+='<button class="btn btn-sm btn-success" onclick="upgradeSub(''+u.id+'')">Upgrade</button>';
-    if(sub&&!exp)html+='<button class="btn btn-sm" onclick="extendTrial(''+u.id+'')">Extend trial</button>';
-    if(sub&&!exp)html+='<button class="btn btn-sm btn-danger" onclick="cancelSub(''+u.id+'')">Cancel</button>';
-    if(u.id!==_currentUser?.id)html+='<button class="btn btn-sm '+(u.is_active?'btn-danger':'')+'" onclick="toggleStatus(''+u.id+'','+u.is_active+')">'+(u.is_active?'Suspend':'Reactivate')+'</button>';
-    html+='</div></div>';
+    const card=document.createElement('div');
+    card.className='user-card';
+    card.innerHTML=
+      '<div class="uc-top"><div class="uc-av">'+av+'</div>'+
+      '<div><div class="uc-name">'+u.full_name+'</div>'+
+      '<div style="margin-top:4px"><span class="rbadge rb-'+u.role+'">'+u.role.replace(/_/g,' ')+'</span> '+
+      '<span class="sub-badge '+subCls+'">'+subLabel+'</span></div></div></div>'+
+      '<div class="uc-status"><div class="uc-dot '+(u.is_active?'uc-active':'uc-inactive')+'"></div>'+
+      '<span>'+(u.is_active?'Active':'Suspended')+'</span></div>'+
+      '<div class="uc-actions" id="uca-'+u.id+'"></div>';
+    grid.appendChild(card);
+    // Add action buttons safely using DOM
+    const actions=document.getElementById('uca-'+u.id);
+    const editBtn=document.createElement('button');
+    editBtn.className='btn btn-sm';editBtn.textContent='Edit';
+    editBtn.addEventListener('click',()=>openEditUser(u.id));
+    actions.appendChild(editBtn);
+    if(sub&&!exp&&sub.plan==='trial'){
+      const upBtn=document.createElement('button');
+      upBtn.className='btn btn-sm btn-success';upBtn.textContent='Upgrade';
+      upBtn.addEventListener('click',()=>upgradeSub(u.id));
+      actions.appendChild(upBtn);
+    }
+    if(sub&&!exp){
+      const exBtn=document.createElement('button');
+      exBtn.className='btn btn-sm';exBtn.textContent='Extend trial';
+      exBtn.addEventListener('click',()=>extendTrial(u.id));
+      actions.appendChild(exBtn);
+      const canBtn=document.createElement('button');
+      canBtn.className='btn btn-sm btn-danger';canBtn.textContent='Cancel';
+      canBtn.addEventListener('click',()=>cancelSub(u.id));
+      actions.appendChild(canBtn);
+    }
+    if(u.id!==_currentUser?.id){
+      const togBtn=document.createElement('button');
+      togBtn.className='btn btn-sm'+(u.is_active?' btn-danger':'');
+      togBtn.textContent=u.is_active?'Suspend':'Reactivate';
+      togBtn.addEventListener('click',()=>toggleStatus(u.id,u.is_active));
+      actions.appendChild(togBtn);
+    }
   }
-  grid.innerHTML=html;
 }
 
 async function upgradeSub(uid){if(!confirm('Confirm payment received?'))return;await sb.from('subscriptions').update({plan:'monthly',expires_at:new Date(Date.now()+30*864e5).toISOString()}).eq('user_id',uid);shellToast('Upgraded ✓','s');loadAdminUsers();}
@@ -3330,23 +3339,35 @@ async function loadRolePerms(){
   const roles=['admin','manager','stock_controller','store_keeper','viewer'];
   const mods=['dashboard','stock','deductions','restock','po','suppliers','costing','logs'];
   const wrap=document.getElementById('admin-roles-wrap');if(!wrap)return;
-  let html='';
+  wrap.innerHTML='';
   for(const role of roles){
     const rp=(perms||[]).filter(p=>p.role===role);
-    html+='<div style="margin-bottom:16px;background:#fff;border:1px solid #e5e9f4;border-radius:14px;padding:16px 18px;">';
-    html+='<div style="margin-bottom:10px"><span class="rbadge rb-'+role+'">'+role.replace(/_/g,' ')+'</span></div><div class="perm-grid">';
+    const card=document.createElement('div');
+    card.style.cssText='margin-bottom:16px;background:#fff;border:1px solid #e5e9f4;border-radius:14px;padding:16px 18px;';
+    const badge=document.createElement('div');
+    badge.style.marginBottom='10px';
+    badge.innerHTML='<span class="rbadge rb-'+role+'">'+role.replace(/_/g,' ')+'</span>';
+    card.appendChild(badge);
+    const grid=document.createElement('div');
+    grid.className='perm-grid';
     for(const mod of mods){
       const p=rp.find(x=>x.module===mod)||{can_view:false,can_edit:false};
-      html+='<div class="perm-item"><span class="perm-label">'+mod.replace(/_/g,' ')+'</span><div class="perm-toggles">';
-      html+='<button class="pt pt-v'+(p.can_view?' on':'')+'" onclick="togglePerm(''+role+'',''+mod+'','view',this)">View</button>';
-      html+='<button class="pt pt-e'+(p.can_edit?' on':'')+'" onclick="togglePerm(''+role+'',''+mod+'','edit',this)">Edit</button>';
-      html+='</div></div>';
+      const item=document.createElement('div');item.className='perm-item';
+      const label=document.createElement('span');label.className='perm-label';label.textContent=mod.replace(/_/g,' ');
+      const btns=document.createElement('div');btns.className='perm-toggles';
+      const vBtn=document.createElement('button');
+      vBtn.className='pt pt-v'+(p.can_view?' on':'');vBtn.textContent='View';
+      vBtn.addEventListener('click',function(){togglePerm(role,mod,'view',this);});
+      const eBtn=document.createElement('button');
+      eBtn.className='pt pt-e'+(p.can_edit?' on':'');eBtn.textContent='Edit';
+      eBtn.addEventListener('click',function(){togglePerm(role,mod,'edit',this);});
+      btns.appendChild(vBtn);btns.appendChild(eBtn);
+      item.appendChild(label);item.appendChild(btns);
+      grid.appendChild(item);
     }
-    html+='</div></div>';
+    card.appendChild(grid);wrap.appendChild(card);
   }
-  wrap.innerHTML=html;
 }
-
 async function togglePerm(role,mod,type,btn){
   const on=btn.classList.contains('on');
   await sb.from('role_permissions').update(type==='view'?{can_view:!on}:{can_edit:!on}).eq('role',role).eq('module',mod);
@@ -3364,18 +3385,27 @@ async function openEditUser(id){
   const {data:rp}=await sb.from('role_permissions').select('*').eq('role',u.role);
   const {data:up}=await sb.from('user_permissions').select('*').eq('user_id',id);
   const mods=['dashboard','stock','deductions','restock','po','suppliers','costing','logs'];
-  let html='';
+  const permGrid=document.getElementById('eu-perms');permGrid.innerHTML='';
   for(const mod of mods){
     const ov=up?.find(x=>x.module===mod);
     const def=(rp||[]).find(x=>x.module===mod)||{can_view:false,can_edit:false};
     const view=ov?ov.can_view:def.can_view,edit=ov?ov.can_edit:def.can_edit;
-    html+='<div class="perm-item"><span class="perm-label">'+mod.replace(/_/g,' ')+'</span><div class="perm-toggles">';
-    html+='<button class="pt pt-v'+(view?' on':'')+'" data-mod="'+mod+'" data-type="view" onclick="this.classList.toggle('on')">View</button>';
-    html+='<button class="pt pt-e'+(edit?' on':'')+'" data-mod="'+mod+'" data-type="edit" onclick="this.classList.toggle('on')">Edit</button>';
-    html+='</div></div>';
+    const item=document.createElement('div');item.className='perm-item';
+    const label=document.createElement('span');label.className='perm-label';label.textContent=mod.replace(/_/g,' ');
+    const btns=document.createElement('div');btns.className='perm-toggles';
+    const vBtn=document.createElement('button');
+    vBtn.className='pt pt-v'+(view?' on':'');vBtn.textContent='View';
+    vBtn.dataset.mod=mod;vBtn.dataset.type='view';
+    vBtn.addEventListener('click',function(){this.classList.toggle('on');});
+    const eBtn=document.createElement('button');
+    eBtn.className='pt pt-e'+(edit?' on':'');eBtn.textContent='Edit';
+    eBtn.dataset.mod=mod;eBtn.dataset.type='edit';
+    eBtn.addEventListener('click',function(){this.classList.toggle('on');});
+    btns.appendChild(vBtn);btns.appendChild(eBtn);
+    item.appendChild(label);item.appendChild(btns);
+    permGrid.appendChild(item);
   }
-  document.getElementById('eu-perms').innerHTML=html;
-  openShellModal('modal-edit-user');
+    openShellModal('modal-edit-user');
 }
 
 async function saveUser(){
