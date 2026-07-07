@@ -477,34 +477,35 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px;}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--text3);}
 
-/* App pages fill content area */
-#screen-app .main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-#screen-app .page.active{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-#screen-app .content{flex:1;overflow-y:auto;padding:20px 24px;}
-/* Hide app's own topbar since we have our own */
-#screen-app .topbar{display:none;}
+/* Shell overrides */
+#screen-app { display:none; }
+#screen-app .topbar { position:relative; }
 </style>
+
+<style>
+.admin-tab-panel{display:none;}
+.admin-tab-panel.active{display:block;}
+.admin-tab.active{background:#fff!important;color:#5b4fcf!important;font-weight:700!important;box-shadow:0 1px 3px rgba(13,18,37,.07)!important;}
+</style>
+
 </head>
 <body>
 
-<!-- ══ LOADING ══ -->
-<div id="screen-loading">
+<!-- LOADING -->
+<div id="screen-loading" style="position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
   <div class="load-logo">CloudStock Pro</div>
   <div class="load-sub">by TECH AT WORK LTD</div>
   <div class="load-bar"><div class="load-fill"></div></div>
 </div>
 
-<!-- ══ LOGIN ══ -->
-<div id="screen-login">
+<!-- LOGIN -->
+<div id="screen-login" style="display:none;min-height:100vh;align-items:stretch;">
   <div class="ll">
     <div class="ll-brand">
       <div class="ll-brand-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="24" height="24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
       </div>
-      <div>
-        <div class="ll-brand-name">CloudStock Pro</div>
-        <div class="ll-brand-sub">Stock Control</div>
-      </div>
+      <div><div class="ll-brand-name">CloudStock Pro</div><div class="ll-brand-sub">Stock Control</div></div>
     </div>
     <div class="ll-hero">
       <div class="ll-hero-title">Smart stock<br><span>management</span><br>made simple</div>
@@ -532,8 +533,6 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
       </div>
       <div class="lf-err" id="lf-err"></div>
       <div class="lf-suc" id="lf-suc"></div>
-
-      <!-- SIGN IN -->
       <div class="lf-panel active" id="panel-si">
         <div class="lf-title">Welcome back</div>
         <div class="lf-sub">Sign in to your account</div>
@@ -554,8 +553,6 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
           <button class="lf-btn" onclick="doReset()" style="margin-top:0">Send reset link</button>
         </div>
       </div>
-
-      <!-- SIGN UP -->
       <div class="lf-panel" id="panel-su">
         <div class="lf-title">Start free trial</div>
         <div class="lf-sub">15 days full access. No credit card needed.</div>
@@ -572,7 +569,6 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
           <span id="su-txt">Create free account</span><div class="lf-spinner" id="su-spin"></div>
         </button>
       </div>
-
       <div class="lf-trial">
         <div class="lf-trial-t">⏱ 15-Day Free Trial</div>
         <div class="lf-trial-d">Full access for 15 days. Contact TECH AT WORK LTD to upgrade.</div>
@@ -582,28 +578,103 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
   </div>
 </div>
 
-<!-- ══ APP ══ -->
+<!-- APP (original shell with sidebar intact + admin page added) -->
 <div id="screen-app">
-  <div class="app-topbar">
-    <div class="app-brand">
-      <div class="app-brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="16" height="16"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
-      <div class="app-brand-name">CloudStock Pro</div>
+  <!-- Topbar with sign out -->
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e5e9f4;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#5b4fcf,#7c3aed);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="14" height="14"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div>
+      <span style="font-size:14px;font-weight:800;color:#0d1225;letter-spacing:-.3px;">CloudStock Pro</span>
     </div>
-    <div class="app-topbar-right">
-      <div class="app-user-pill">
-        <div class="app-user-av" id="topbar-av">U</div>
-        <div class="app-user-name" id="topbar-name">User</div>
-        <div class="app-user-role" id="topbar-role">viewer</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 12px;background:#f8f9fd;border-radius:20px;border:1px solid #e5e9f4;">
+        <div id="topbar-av" style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#5b4fcf,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;">U</div>
+        <span id="topbar-name" style="font-size:12px;font-weight:600;color:#0d1225;">User</span>
+        <span id="topbar-role" style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#eeecfb;color:#5b4fcf;text-transform:uppercase;letter-spacing:.3px;">viewer</span>
       </div>
-      <button class="app-signout" onclick="doSignOut()">
+      <button onclick="doSignOut()" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid #e5e9f4;border-radius:8px;background:#fff;color:#5a6380;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;" onmouseover="this.style.borderColor='#fecaca';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#e5e9f4';this.style.color='#5a6380'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign out
       </button>
     </div>
   </div>
-  <div class="app-body">
-    <!-- App sidebar + pages injected here -->
-    <!-- ══ DASHBOARD ══ -->
+  <!-- Original app shell (sidebar + main with all pages) -->
+  <div class="shell" style="flex:1;overflow:hidden;">
+
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-row">
+      <div class="logo-gem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">CloudStock Pro</div>
+        <div class="logo-sub">Stock Control</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-lbl">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <div class="nav-lbl">Inventory</div>
+    <button class="nav-item" onclick="showPage('stock',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Stock
+    </button>
+    <button class="nav-item" onclick="showPage('deductions',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Deductions
+      <span class="nav-pill np-amber" id="nav-ded" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('restock',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Restock
+    </button>
+    <div class="nav-lbl">Purchasing</div>
+    <button class="nav-item" onclick="showPage('po',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Purchase Orders
+      <span class="nav-pill np-purple" id="nav-po" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('suppliers',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Suppliers
+      <span class="nav-pill np-amber" id="nav-sup" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('costing',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Costing
+    </button>
+    <div class="nav-lbl">Logs</div>
+    <button class="nav-item" onclick="showPage('dedlog',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Deduction log
+      <span class="nav-pill np-amber" id="nav-dedlog" style="display:none">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('restocklog',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Restock log
+      <span class="nav-pill" style="background:var(--success-light);color:var(--success);display:none" id="nav-rslog">0</span>
+    </button>
+  </nav>
+  <div class="sb-foot">
+    <div class="user-tile">
+      <div class="user-av">N</div>
+      <div><div class="user-name">CloudStock Pro</div><div class="user-role">Stock Manager</div></div>
+    </div>
+    <div id="demo-timer" style="margin-top:8px;text-align:center;font-size:10px;font-weight:700;color:var(--danger);letter-spacing:.3px;background:var(--danger-light);border-radius:6px;padding:5px 8px;"></div>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="main">
+
+<!-- ══ DASHBOARD ══ -->
 <div class="page active" id="page-dashboard">
   <div class="topbar">
     <div class="tb-left"><div class="tb-title">Dashboard</div><div class="tb-sub" id="dash-date"></div></div>
@@ -1148,62 +1219,69 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
     </div>
   </div>
 </div>
-    <!-- Admin page -->
-    <div class="page" id="page-admin">
-      <div class="admin-wrap">
-        <div class="admin-h1">Admin Console</div>
-        <div class="admin-sub">Manage users, roles and subscriptions</div>
-        <div class="admin-tabs">
-          <button class="admin-tab active" onclick="adminTab('users',this)">Users & Subscriptions</button>
-          <button class="admin-tab" onclick="adminTab('roles',this)">Role permissions</button>
-          <button class="admin-tab" onclick="adminTab('invite',this)">Invite user</button>
+
+</div><!-- /main -->
+
+<!-- ADMIN PAGE -->
+<div class="page" id="page-admin">
+  <div class="topbar">
+    <div class="tb-left"><div class="tb-title">Admin Console</div></div>
+    <div class="tb-right"></div>
+  </div>
+  <div class="content" style="padding:24px;max-width:960px">
+    <div class="admin-tabs" style="display:flex;gap:4px;background:#f8f9fd;border-radius:10px;padding:4px;margin-bottom:20px;border:1px solid #e5e9f4;">
+      <button class="admin-tab active" onclick="adminTab('users',this)" style="padding:7px 16px;border-radius:7px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);background:#fff;color:#5b4fcf;box-shadow:0 1px 3px rgba(13,18,37,.07);">Users & Subscriptions</button>
+      <button class="admin-tab" onclick="adminTab('roles',this)" style="padding:7px 16px;border-radius:7px;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);background:transparent;color:#5a6380;">Role permissions</button>
+      <button class="admin-tab" onclick="adminTab('invite',this)" style="padding:7px 16px;border-radius:7px;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);background:transparent;color:#5a6380;">Invite user</button>
+    </div>
+    <div class="admin-tab-panel active" id="atp-users">
+      <div id="admin-users-grid" class="user-grid"><div style="color:#9ca3ba;padding:2rem">Loading...</div></div>
+    </div>
+    <div class="admin-tab-panel" id="atp-roles" style="display:none">
+      <div id="admin-roles-wrap"></div>
+    </div>
+    <div class="admin-tab-panel" id="atp-invite" style="display:none">
+      <div style="max-width:440px">
+        <div style="font-size:13px;color:#5a6380;margin-bottom:18px">Invite a new user to CloudStock Pro.</div>
+        <div class="fg"><label class="fl">Full name</label><input type="text" class="fi" id="inv-name" placeholder="e.g. Jean-Marie Dupont"></div>
+        <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="inv-email" placeholder="user@company.com"></div>
+        <div class="fg"><label class="fl">Role</label>
+          <select class="fi" id="inv-role">
+            <option value="viewer">Viewer</option><option value="store_keeper">Store Keeper</option>
+            <option value="stock_controller">Stock Controller</option><option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
-        <div class="admin-tab-panel active" id="atp-users">
-          <div id="admin-users-grid" class="user-grid"><div style="color:#9ca3ba;padding:2rem">Loading…</div></div>
-        </div>
-        <div class="admin-tab-panel" id="atp-roles">
-          <div id="admin-roles-wrap"></div>
-        </div>
-        <div class="admin-tab-panel" id="atp-invite">
-          <div style="max-width:440px">
-            <div style="font-size:13px;color:#5a6380;margin-bottom:18px">Invite a new user. They will receive an email to set their password.</div>
-            <div class="sf-group"><label class="sf-label">Full name</label><input type="text" class="sf-input" id="inv-name" placeholder="e.g. Jean-Marie Dupont"></div>
-            <div class="sf-group"><label class="sf-label">Email</label><input type="email" class="sf-input" id="inv-email" placeholder="user@company.com"></div>
-            <div class="sf-group"><label class="sf-label">Role</label>
-              <select class="sf-input" id="inv-role">
-                <option value="viewer">Viewer</option>
-                <option value="store_keeper">Store Keeper</option>
-                <option value="stock_controller">Stock Controller</option>
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <button class="lf-btn" onclick="doInvite()" style="margin-top:4px">Send invitation</button>
-            <div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#92400e">
-              <strong>Note:</strong> After sending, also go to Supabase → Authentication → Users → Invite user to trigger the email.
-            </div>
-          </div>
+        <button class="btn btn-primary" onclick="doInvite()" style="width:100%">Send invitation</button>
+        <div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#92400e">
+          <strong>Note:</strong> Also go to Supabase → Authentication → Users → Invite user to send the email.
         </div>
       </div>
     </div>
   </div>
 </div>
 
+  </div>
+</div>
+
 <!-- EDIT USER MODAL -->
-<div class="shell-modal" id="modal-edit-user">
-  <div class="sm-box">
-    <div class="sm-hdr"><div class="sm-title">Edit user</div><button class="btn btn-ghost" style="padding:5px 8px" onclick="closeShellModal('modal-edit-user')">✕</button></div>
-    <div class="sm-body">
-      <div class="sf-group"><label class="sf-label">Full name</label><input type="text" class="sf-input" id="eu-name"></div>
-      <div class="sf-group"><label class="sf-label">Role</label>
-        <select class="sf-input" id="eu-role">
+<div class="shell-modal" id="modal-edit-user" style="position:fixed;inset:0;background:rgba(13,18,37,.4);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);">
+  <div style="background:#fff;border-radius:18px;width:480px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(13,18,37,.15);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #e5e9f4;">
+      <div style="font-size:15px;font-weight:800;color:#0d1225;">Edit user</div>
+      <button onclick="closeShellModal('modal-edit-user')" style="background:none;border:none;cursor:pointer;font-size:18px;color:#9ca3ba;">✕</button>
+    </div>
+    <div style="padding:22px;">
+      <div class="fg"><label class="fl">Full name</label><input type="text" class="fi" id="eu-name"></div>
+      <div class="fg"><label class="fl">Role</label>
+        <select class="fi" id="eu-role">
           <option value="viewer">Viewer</option><option value="store_keeper">Store Keeper</option>
           <option value="stock_controller">Stock Controller</option><option value="manager">Manager</option>
           <option value="admin">Admin</option>
         </select>
       </div>
-      <div class="sf-group"><label class="sf-label">Status</label>
-        <select class="sf-input" id="eu-status"><option value="true">Active</option><option value="false">Suspended</option></select>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fi" id="eu-status"><option value="true">Active</option><option value="false">Suspended</option></select>
       </div>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e9f4;">
         <div style="font-size:11px;font-weight:700;color:#5a6380;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Permission overrides</div>
@@ -1211,15 +1289,15 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
       </div>
       <input type="hidden" id="eu-id">
     </div>
-    <div class="sm-foot">
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid #e5e9f4;background:#f8f9fd;border-radius:0 0 18px 18px;">
       <button class="btn" onclick="closeShellModal('modal-edit-user')">Cancel</button>
       <button class="btn btn-primary" onclick="saveUser()">Save changes</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="shell-toast" id="shell-toast"></div>
+<!-- SHELL TOAST -->
+<div id="shell-toast" style="position:fixed;bottom:20px;right:20px;background:#fff;border:1px solid #e5e9f4;border-radius:14px;padding:11px 16px;font-size:12.5px;font-weight:500;color:#0d1225;z-index:9999;box-shadow:0 8px 32px rgba(13,18,37,.15);display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;"></div>
 
 <!-- APP MODALS -->
 <!-- PO PDF Print Area (hidden, shown on print) -->
@@ -1520,9 +1598,8 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
 
 <script>
 
-
 // ── RAW DATA ──────────────────────────────────────────────────────
-// Items loaded from Supabase
+// Items start empty
 
 const CAT={'Dairy Products':'b-dairy','Frozen Goods':'b-frozen','Chilled Goods':'b-chilled','Dry Goods':'b-dry','Vegetables & Fruits':'b-veg','Non-Food':'b-nonfood'};
 
@@ -1536,7 +1613,23 @@ function genSKU(name,cat,id){
   const nameCode=name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4).padEnd(4,'X');
   return `NKI-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
 }
+// Items start empty
+RAW DATA ──────────────────────────────────────────────────────
+// Items start empty
 
+const CAT={'Dairy Products':'b-dairy','Frozen Goods':'b-frozen','Chilled Goods':'b-chilled','Dry Goods':'b-dry','Vegetables & Fruits':'b-veg','Non-Food':'b-nonfood'};
+
+let items=[],cart={},txHistory=[],dedLog=[],rsLog=[],pos=[],alerts=[],nextId=1,poId=1,curPage=1,alertsOpen=false;
+const PG=25;
+
+// build items — all start at qty 50
+function genSKU(name,cat,id){
+  const catCodes={'Dairy Products':'DAI','Frozen Goods':'FRZ','Chilled Goods':'CHL','Dry Goods':'DRY','Vegetables & Fruits':'VEG','Non-Food':'NFD'};
+  const catCode=catCodes[cat]||'GEN';
+  const nameCode=name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4).padEnd(4,'X');
+  return `NKI-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
+}
+(()=>{const s=new Set();Object.entries(RAW).forEach(([cat,list])=>list.forEach(([name,unit])=>{const k=name+'|'+cat;if(s.has(k))return;s.add(k);const id=nextId++;items.push({id,name,category:cat,unit,qty:50,threshold:10,supplier:'',sku:genSKU(name,cat,id)});}));})();
 
 document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
@@ -3026,158 +3119,125 @@ function initApp(){
 }
 // demo timer removed
 
-
 </script>
-<script>
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CLOUDSTOCK PRO — SHELL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const SUPABASE_URL      = 'https://mrakledylxdxqeekkcrp.supabase.co';
+<script>
+const SUPABASE_URL = 'https://mrakledylxdxqeekkcrp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yYWtsZWR5bHhkeHFlZWtrY3JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAyOTIsImV4cCI6MjA5ODkwNjI5Mn0.rKsWYIAODR92ADUKmUHg5TG47-kZVXUuDVzZ9hbeeNg';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let _currentUser = null;
-let _userProfile = null;
-let _userPerms   = {};
-const MODS = ['dashboard','stock','deductions','restock','po','suppliers','costing','logs','admin_console'];
+let _currentUser=null, _userProfile=null, _userPerms={};
 
-// ── BOOT ─────────────────────────────────────────────────────────
 async function boot(){
-  try {
-    const { data:{ session } } = await sb.auth.getSession();
-    if(session){ await loadProfile(session.user); showApp(); }
-    else { showLogin(); }
-  } catch(e){ showLogin(); }
-  document.getElementById('screen-loading').style.display = 'none';
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){await loadProfile(session.user);showAppScreen();}
+    else{showLoginScreen();}
+  }catch(e){showLoginScreen();}
+  document.getElementById('screen-loading').style.display='none';
 }
 
 async function loadProfile(user){
-  _currentUser = user;
-  let { data:p } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  _currentUser=user;
+  let {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
   if(!p){
-    const { data:np } = await sb.from('profiles').insert({
-      id: user.id,
-      full_name: user.user_metadata?.full_name || user.email,
-      role: 'viewer',
-      is_active: true
+    const {data:np}=await sb.from('profiles').insert({
+      id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true
     }).select().single();
-    p = np;
+    p=np;
   }
-  _userProfile = p;
-  // Load permissions
-  const { data:perms } = await sb.rpc('get_user_permissions', { uid: user.id });
-  _userPerms = {};
-  if(perms && perms.length){
-    perms.forEach(p => { _userPerms[p.module] = { view: p.can_view, edit: p.can_edit }; });
-  } else if(_userProfile?.role === 'admin'){
-    MODS.forEach(m => { _userPerms[m] = { view:true, edit:true }; });
-  }
-  sb.from('profiles').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+  _userProfile=p;
+  const {data:perms}=await sb.rpc('get_user_permissions',{uid:user.id});
+  _userPerms={};
+  const MODS=['dashboard','stock','deductions','restock','po','suppliers','costing','logs','admin_console'];
+  if(perms&&perms.length){perms.forEach(p=>{_userPerms[p.module]={view:p.can_view,edit:p.can_edit};});}
+  else if(_userProfile?.role==='admin'){MODS.forEach(m=>{_userPerms[m]={view:true,edit:true};});}
+  sb.from('profiles').update({last_login:new Date().toISOString()}).eq('id',user.id);
 }
 
-// ── SCREENS ───────────────────────────────────────────────────────
-function showLogin(){
-  document.getElementById('screen-login').style.display = 'flex';
-  document.getElementById('screen-app').style.display   = 'none';
+function showLoginScreen(){
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('screen-app').style.display='none';
 }
 
-function showApp(){
-  document.getElementById('screen-login').style.display = 'none';
-  document.getElementById('screen-app').style.display   = 'flex';
-  // Populate topbar
-  const name = _userProfile?.full_name || _currentUser?.email || 'User';
-  const role = _userProfile?.role || 'viewer';
-  document.getElementById('topbar-av').textContent   = name.charAt(0).toUpperCase();
-  document.getElementById('topbar-name').textContent = name;
-  document.getElementById('topbar-role').textContent = role.replace(/_/g,' ');
-  // Add admin nav if admin
-  if(role === 'admin'){
-    const nav = document.querySelector('nav.sidebar, aside, nav');
-    if(nav){
-      const adminBtn = document.createElement('button');
-      adminBtn.className = 'nav-item';
-      adminBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin';
-      adminBtn.onclick = function(){ showPage('admin', this); };
-      const navLogs = nav.querySelector('.nav-lbl:last-of-type');
-      if(navLogs) nav.appendChild(adminBtn);
-      else nav.appendChild(adminBtn);
+function showAppScreen(){
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-app').style.display='block';
+  // Topbar user info
+  const name=_userProfile?.full_name||_currentUser?.email||'User';
+  const role=_userProfile?.role||'viewer';
+  const av=document.getElementById('topbar-av');const tn=document.getElementById('topbar-name');const tr=document.getElementById('topbar-role');
+  if(av)av.textContent=name.charAt(0).toUpperCase();
+  if(tn)tn.textContent=name;
+  if(tr)tr.textContent=role.replace(/_/g,' ');
+  // Sidebar user info
+  const un=document.querySelector('.user-name');const ur=document.querySelector('.user-role');const uav=document.querySelector('.user-av');
+  if(un)un.textContent=name;if(ur)ur.textContent=role.replace(/_/g,' ');if(uav)uav.textContent=name.charAt(0).toUpperCase();
+  // Add admin nav item if admin
+  if(role==='admin'){
+    const nav=document.querySelector('nav');
+    if(nav&&!document.getElementById('admin-nav-btn')){
+      const sep=document.createElement('div');sep.className='nav-lbl';sep.textContent='Admin';
+      const btn=document.createElement('button');btn.id='admin-nav-btn';btn.className='nav-item';
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin console';
+      btn.onclick=function(){showAdminPage();this.parentElement.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));this.classList.add('active');};
+      nav.appendChild(sep);nav.appendChild(btn);
     }
   }
-  // Apply permissions to nav
-  applyPerms();
-  // Update sidebar user info
-  const unEl = document.querySelector('.user-name');
-  const urEl = document.querySelector('.user-role');
-  if(unEl) unEl.textContent = name;
-  if(urEl) urEl.textContent = role.replace(/_/g,' ');
-  // Show subscription status for trial users
+  // Subscription check
   checkSubStatus();
-  // Init the stock app
-  try { if(typeof renderTable==='function') renderTable(); } catch(e){}
-  try { if(typeof updateStats==='function') updateStats(); } catch(e){}
-  try { if(typeof renderDashboard==='function') renderDashboard(); } catch(e){}
-  try { if(typeof updateBells==='function') updateBells(); } catch(e){}
-  try { if(typeof updateLogCounts==='function') updateLogCounts(); } catch(e){}
+  // Init app
+  if(typeof initApp==='function')initApp();
 }
 
 async function checkSubStatus(){
-  const { data:sub } = await sb.from('subscriptions').select('*').eq('user_id', _currentUser.id).single();
-  if(!sub) return;
-  const daysLeft = Math.max(0, Math.ceil((new Date(sub.expires_at)-new Date())/864e5));
-  const isExpired = sub.plan==='cancelled' || new Date(sub.expires_at)<new Date();
-  if(isExpired){
-    await sb.auth.signOut();
-    showLogin();
-    showErr('Your trial has expired. Contact TECH AT WORK LTD on +230 5 735 1067.');
-    return;
-  }
-  if(sub.plan==='trial'){
-    const bar = document.querySelector('.sb-foot');
-    if(bar){
-      const el = document.createElement('div');
-      el.style.cssText='margin-top:8px;text-align:center;font-size:10px;font-weight:700;border-radius:6px;padding:5px 8px;background:'+(daysLeft<=3?'#fff5f5':'#fffbeb')+';color:'+(daysLeft<=3?'#e53e3e':'#d97706');
-      el.textContent = '⏱ Trial — '+daysLeft+' day'+(daysLeft===1?'':'s')+' left';
-      bar.appendChild(el);
+  try{
+    const {data:sub}=await sb.from('subscriptions').select('*').eq('user_id',_currentUser.id).single();
+    if(!sub)return;
+    const exp=sub.plan==='cancelled'||new Date(sub.expires_at)<new Date();
+    if(exp){await sb.auth.signOut();showLoginScreen();showErr('Trial expired. Contact TECH AT WORK LTD on +230 5 735 1067.');return;}
+    if(sub.plan==='trial'){
+      const dl=Math.max(0,Math.ceil((new Date(sub.expires_at)-new Date())/864e5));
+      const sbf=document.querySelector('.sb-foot');
+      if(sbf&&!document.getElementById('sub-bar')){
+        const el=document.createElement('div');el.id='sub-bar';
+        el.style.cssText='margin-top:8px;text-align:center;font-size:10px;font-weight:700;border-radius:6px;padding:5px 8px;background:'+(dl<=3?'#fff5f5':'#fffbeb')+';color:'+(dl<=3?'#e53e3e':'#d97706');
+        el.textContent='Trial — '+dl+' day'+(dl===1?'':'s')+' left';
+        sbf.appendChild(el);
+      }
     }
-  }
+  }catch(e){}
 }
 
-function applyPerms(){
-  document.querySelectorAll('.nav-item[data-module]').forEach(btn => {
-    const perm = _userPerms[btn.dataset.module];
-    if(!perm || !perm.view){ btn.classList.add('disabled'); btn.style.opacity='.3'; btn.style.pointerEvents='none'; }
-    else { btn.classList.remove('disabled'); btn.style.opacity=''; btn.style.pointerEvents=''; }
-  });
-}
-
-// ── AUTH ──────────────────────────────────────────────────────────
+// AUTH FUNCTIONS
 function switchTab(tab){
   document.querySelectorAll('.lf-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.lf-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
-  showErr(''); showSuc('');
+  showErr('');showSuc('');
 }
-
-function tpw(id){ const i=document.getElementById(id); i.type=i.type==='password'?'text':'password'; }
-function toggleReset(){ const r=document.getElementById('reset-block'); r.style.display=r.style.display==='none'?'block':'none'; }
-function showErr(m){ const e=document.getElementById('lf-err'); e.textContent=m; e.classList.toggle('show',!!m); }
-function showSuc(m){ const e=document.getElementById('lf-suc'); e.textContent=m; e.classList.toggle('show',!!m); }
-function setLoad(btn,spin,txt,on){ document.getElementById(btn).disabled=on; document.getElementById(spin).style.display=on?'inline-block':'none'; document.getElementById(txt).style.display=on?'none':'inline'; }
+function tpw(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';}
+function toggleReset(){const r=document.getElementById('reset-block');r.style.display=r.style.display==='none'?'block':'none';}
+function showErr(m){const e=document.getElementById('lf-err');if(e){e.textContent=m;e.classList.toggle('show',!!m);}}
+function showSuc(m){const e=document.getElementById('lf-suc');if(e){e.textContent=m;e.classList.toggle('show',!!m);}}
+function setLoad(btn,spin,txt,on){
+  const b=document.getElementById(btn),s=document.getElementById(spin),t=document.getElementById(txt);
+  if(b)b.disabled=on;if(s)s.style.display=on?'inline-block':'none';if(t)t.style.display=on?'none':'inline';
+}
 
 async function doLogin(){
   const email=document.getElementById('si-email').value.trim();
   const pw=document.getElementById('si-pw').value;
-  if(!email||!pw){ showErr('Please enter your email and password.'); return; }
+  if(!email||!pw){showErr('Please enter your email and password.');return;}
   setLoad('si-btn','si-spin','si-txt',true);
   const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
   setLoad('si-btn','si-spin','si-txt',false);
-  if(error){ showErr(error.message); return; }
+  if(error){showErr(error.message);return;}
   await loadProfile(data.user);
-  if(_userProfile&&!_userProfile.is_active){ await sb.auth.signOut(); showErr('Account suspended. Contact TECH AT WORK LTD.'); return; }
-  showApp();
+  if(_userProfile&&!_userProfile.is_active){await sb.auth.signOut();showErr('Account suspended. Contact TECH AT WORK LTD.');return;}
+  showAppScreen();
 }
 
 async function doSignUp(){
@@ -3185,20 +3245,20 @@ async function doSignUp(){
   const email=document.getElementById('su-email').value.trim();
   const pw=document.getElementById('su-pw').value;
   const cf=document.getElementById('su-confirm').value;
-  if(!name||!email||!pw){ showErr('Please fill in all fields.'); return; }
-  if(pw.length<8){ showErr('Password must be at least 8 characters.'); return; }
-  if(pw!==cf){ showErr('Passwords do not match.'); return; }
+  if(!name||!email||!pw){showErr('Please fill in all fields.');return;}
+  if(pw.length<8){showErr('Password must be at least 8 characters.');return;}
+  if(pw!==cf){showErr('Passwords do not match.');return;}
   setLoad('su-btn','su-spin','su-txt',true);
   const {error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name}}});
   setLoad('su-btn','su-spin','su-txt',false);
-  if(error){ showErr(error.message); return; }
+  if(error){showErr(error.message);return;}
   showSuc('Account created! Check your email to confirm, then sign in.');
   switchTab('si');
 }
 
 async function doReset(){
   const email=document.getElementById('reset-email').value.trim();
-  if(!email) return;
+  if(!email)return;
   await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
   showSuc('Reset link sent! Check your inbox.');
   toggleReset();
@@ -3206,96 +3266,80 @@ async function doReset(){
 
 async function doSignOut(){
   await sb.auth.signOut();
-  _currentUser=null; _userProfile=null; _userPerms={};
-  showLogin();
+  _currentUser=null;_userProfile=null;_userPerms={};
+  showLoginScreen();
 }
 
-document.addEventListener('keydown', e => {
-  if(e.key==='Enter' && document.getElementById('screen-login').style.display!=='none'){
-    if(document.getElementById('panel-si').classList.contains('active')) doLogin();
-    else doSignUp();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('screen-login').style.display==='flex'){
+    document.getElementById('panel-si').classList.contains('active')?doLogin():doSignUp();
   }
 });
 
-// ── ADMIN ─────────────────────────────────────────────────────────
-function adminTab(tab, btn){
+// ADMIN PAGE
+function showAdminPage(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const ap=document.getElementById('page-admin');
+  if(ap){ap.classList.add('active');loadAdminUsers();}
+}
+
+function adminTab(tab,btn){
   document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('atp-'+tab).classList.add('active');
-  if(tab==='users') loadAdminUsers();
-  if(tab==='roles') loadRolePerms();
+  if(btn)btn.classList.add('active');
+  const panel=document.getElementById('atp-'+tab);if(panel)panel.classList.add('active');
+  if(tab==='users')loadAdminUsers();
+  if(tab==='roles')loadRolePerms();
 }
 
 async function loadAdminUsers(){
   const {data:users}=await sb.from('profiles').select('*').order('created_at');
   const {data:subs}=await sb.from('subscriptions').select('*');
-  const grid=document.getElementById('admin-users-grid');
-  if(!grid) return;
-  if(!users?.length){grid.innerHTML='<div style="color:#9ca3ba;padding:2rem">No users yet.</div>';return;}
+  const grid=document.getElementById('admin-users-grid');if(!grid)return;
+  if(!users?.length){grid.innerHTML='<div style="color:#9ca3ba;padding:2rem;grid-column:1/-1">No users yet.</div>';return;}
   let html='';
   for(const u of users){
     const av=u.full_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const sub=subs?.find(s=>s.user_id===u.id);
     const dl=sub?Math.max(0,Math.ceil((new Date(sub.expires_at)-new Date())/864e5)):0;
     const exp=sub?(sub.plan==='cancelled'||new Date(sub.expires_at)<new Date()):true;
-    const subLabel=!sub?'No subscription':exp?'Expired':sub.plan==='monthly'?'Paid ('+dl+'d)':'Trial ('+dl+'d left)';
+    const subLabel=!sub?'No subscription':exp?'Expired':sub.plan==='monthly'?'Paid ('+dl+'d)':'Trial ('+dl+'d)';
     const subCls=!sub||exp?'sb-expired':sub.plan==='monthly'?'sb-monthly':'sb-trial';
-    html+='<div class="user-card"><div class="uc-top">';
-    html+='<div class="uc-av">'+av+'</div>';
+    html+='<div class="user-card"><div class="uc-top"><div class="uc-av">'+av+'</div>';
     html+='<div><div class="uc-name">'+u.full_name+'</div>';
-    html+='<div class="uc-role"><span class="rbadge rb-'+u.role+'">'+u.role.replace(/_/g,' ')+'</span> <span class="sub-badge '+subCls+'">'+subLabel+'</span></div></div></div>';
-    html+='<div class="uc-status"><div class="uc-dot '+(u.is_active?'uc-active':'uc-inactive')+'"></div>'+(u.is_active?'Active':'Suspended')+'</div>';
+    html+='<div style="margin-top:4px"><span class="rbadge rb-'+u.role+'">'+u.role.replace(/_/g,' ')+'</span> <span class="sub-badge '+subCls+'">'+subLabel+'</span></div></div></div>';
+    html+='<div class="uc-status"><div class="uc-dot '+(u.is_active?'uc-active':'uc-inactive')+'"></div><span>'+(u.is_active?'Active':'Suspended')+'</span></div>';
     html+='<div class="uc-actions">';
-    html+='<button class="btn btn-sm" onclick="openEditUser(\''+u.id+'\')">Edit</button>';
-    if(sub&&!exp&&sub.plan==='trial') html+='<button class="btn btn-sm btn-success" onclick="upgradeSub(\''+u.id+'\')">Upgrade to monthly</button>';
-    if(sub&&!exp) html+='<button class="btn btn-sm" onclick="extendTrial(\''+u.id+'\')">Extend trial</button>';
-    if(sub&&!exp) html+='<button class="btn btn-sm btn-danger" onclick="cancelSub(\''+u.id+'\')">Cancel</button>';
-    if(u.id!==_currentUser?.id) html+='<button class="btn btn-sm '+(u.is_active?'btn-danger':'')+'" onclick="toggleStatus(\''+u.id+'\','+u.is_active+')">'+(u.is_active?'Suspend':'Reactivate')+'</button>';
+    html+='<button class="btn btn-sm" onclick="openEditUser(''+u.id+'')">Edit</button>';
+    if(sub&&!exp&&sub.plan==='trial')html+='<button class="btn btn-sm btn-success" onclick="upgradeSub(''+u.id+'')">Upgrade</button>';
+    if(sub&&!exp)html+='<button class="btn btn-sm" onclick="extendTrial(''+u.id+'')">Extend trial</button>';
+    if(sub&&!exp)html+='<button class="btn btn-sm btn-danger" onclick="cancelSub(''+u.id+'')">Cancel</button>';
+    if(u.id!==_currentUser?.id)html+='<button class="btn btn-sm '+(u.is_active?'btn-danger':'')+'" onclick="toggleStatus(''+u.id+'','+u.is_active+')">'+(u.is_active?'Suspend':'Reactivate')+'</button>';
     html+='</div></div>';
   }
   grid.innerHTML=html;
 }
 
-async function upgradeSub(uid){
-  if(!confirm('Confirm payment received — upgrade to 1 month?'))return;
-  await sb.from('subscriptions').update({plan:'monthly',expires_at:new Date(Date.now()+30*864e5).toISOString()}).eq('user_id',uid);
-  shellToast('Upgraded to monthly ✓','s'); loadAdminUsers();
-}
-async function extendTrial(uid){
-  const {data:s}=await sb.from('subscriptions').select('expires_at').eq('user_id',uid).single();
-  const base=s&&new Date(s.expires_at)>new Date()?new Date(s.expires_at):new Date();
-  await sb.from('subscriptions').update({plan:'trial',expires_at:new Date(base.getTime()+15*864e5).toISOString()}).eq('user_id',uid);
-  shellToast('Trial extended 15 days','s'); loadAdminUsers();
-}
-async function cancelSub(uid){
-  if(!confirm('Cancel this subscription? User will lose access immediately.'))return;
-  await sb.from('subscriptions').update({plan:'cancelled',expires_at:new Date().toISOString()}).eq('user_id',uid);
-  shellToast('Subscription cancelled','s'); loadAdminUsers();
-}
-async function toggleStatus(uid,active){
-  if(!confirm((active?'Suspend':'Reactivate')+' this user?'))return;
-  await sb.from('profiles').update({is_active:!active}).eq('id',uid);
-  shellToast('User '+(active?'suspended':'reactivated'),'s'); loadAdminUsers();
-}
+async function upgradeSub(uid){if(!confirm('Confirm payment received?'))return;await sb.from('subscriptions').update({plan:'monthly',expires_at:new Date(Date.now()+30*864e5).toISOString()}).eq('user_id',uid);shellToast('Upgraded ✓','s');loadAdminUsers();}
+async function extendTrial(uid){const {data:s}=await sb.from('subscriptions').select('expires_at').eq('user_id',uid).single();const base=s&&new Date(s.expires_at)>new Date()?new Date(s.expires_at):new Date();await sb.from('subscriptions').update({plan:'trial',expires_at:new Date(base.getTime()+15*864e5).toISOString()}).eq('user_id',uid);shellToast('Extended 15 days','s');loadAdminUsers();}
+async function cancelSub(uid){if(!confirm('Cancel?'))return;await sb.from('subscriptions').update({plan:'cancelled',expires_at:new Date().toISOString()}).eq('user_id',uid);shellToast('Cancelled','s');loadAdminUsers();}
+async function toggleStatus(uid,active){if(!confirm((active?'Suspend':'Reactivate')+' this user?'))return;await sb.from('profiles').update({is_active:!active}).eq('id',uid);shellToast('Done','s');loadAdminUsers();}
 
 async function loadRolePerms(){
   const {data:perms}=await sb.from('role_permissions').select('*').order('role');
   const roles=['admin','manager','stock_controller','store_keeper','viewer'];
   const mods=['dashboard','stock','deductions','restock','po','suppliers','costing','logs'];
-  const wrap=document.getElementById('admin-roles-wrap');
-  if(!wrap) return;
+  const wrap=document.getElementById('admin-roles-wrap');if(!wrap)return;
   let html='';
   for(const role of roles){
     const rp=(perms||[]).filter(p=>p.role===role);
-    html+='<div style="margin-bottom:18px;background:#fff;border:1px solid #e5e9f4;border-radius:14px;padding:16px 18px;">';
-    html+='<div style="margin-bottom:12px"><span class="rbadge rb-'+role+'">'+role.replace(/_/g,' ')+'</span></div>';
-    html+='<div class="perm-grid">';
+    html+='<div style="margin-bottom:16px;background:#fff;border:1px solid #e5e9f4;border-radius:14px;padding:16px 18px;">';
+    html+='<div style="margin-bottom:10px"><span class="rbadge rb-'+role+'">'+role.replace(/_/g,' ')+'</span></div><div class="perm-grid">';
     for(const mod of mods){
       const p=rp.find(x=>x.module===mod)||{can_view:false,can_edit:false};
       html+='<div class="perm-item"><span class="perm-label">'+mod.replace(/_/g,' ')+'</span><div class="perm-toggles">';
-      html+='<button class="pt pt-v'+(p.can_view?' on':'')+'" onclick="togglePerm(\''+role+'\',\''+mod+'\',\'view\',this)">View</button>';
-      html+='<button class="pt pt-e'+(p.can_edit?' on':'')+'" onclick="togglePerm(\''+role+'\',\''+mod+'\',\'edit\',this)">Edit</button>';
+      html+='<button class="pt pt-v'+(p.can_view?' on':'')+'" onclick="togglePerm(''+role+'',''+mod+'','view',this)">View</button>';
+      html+='<button class="pt pt-e'+(p.can_edit?' on':'')+'" onclick="togglePerm(''+role+'',''+mod+'','edit',this)">Edit</button>';
       html+='</div></div>';
     }
     html+='</div></div>';
@@ -3306,15 +3350,13 @@ async function loadRolePerms(){
 async function togglePerm(role,mod,type,btn){
   const on=btn.classList.contains('on');
   await sb.from('role_permissions').update(type==='view'?{can_view:!on}:{can_edit:!on}).eq('role',role).eq('module',mod);
-  btn.classList.toggle('on',!on);
-  shellToast(role+' '+mod+' '+type+' '+(on?'off':'on'),'s');
+  btn.classList.toggle('on',!on);shellToast(role+' '+mod+' '+(on?'off':'on'),'s');
 }
 
 let _editId=null;
 async function openEditUser(id){
   _editId=id;
-  const {data:u}=await sb.from('profiles').select('*').eq('id',id).single();
-  if(!u) return;
+  const {data:u}=await sb.from('profiles').select('*').eq('id',id).single();if(!u)return;
   document.getElementById('eu-id').value=id;
   document.getElementById('eu-name').value=u.full_name;
   document.getElementById('eu-role').value=u.role;
@@ -3324,13 +3366,12 @@ async function openEditUser(id){
   const mods=['dashboard','stock','deductions','restock','po','suppliers','costing','logs'];
   let html='';
   for(const mod of mods){
-    const over=up?.find(x=>x.module===mod);
+    const ov=up?.find(x=>x.module===mod);
     const def=(rp||[]).find(x=>x.module===mod)||{can_view:false,can_edit:false};
-    const view=over?over.can_view:def.can_view;
-    const edit=over?over.can_edit:def.can_edit;
+    const view=ov?ov.can_view:def.can_view,edit=ov?ov.can_edit:def.can_edit;
     html+='<div class="perm-item"><span class="perm-label">'+mod.replace(/_/g,' ')+'</span><div class="perm-toggles">';
-    html+='<button class="pt pt-v'+(view?' on':'')+'" data-mod="'+mod+'" data-type="view" onclick="this.classList.toggle(\'on\')">View</button>';
-    html+='<button class="pt pt-e'+(edit?' on':'')+'" data-mod="'+mod+'" data-type="edit" onclick="this.classList.toggle(\'on\')">Edit</button>';
+    html+='<button class="pt pt-v'+(view?' on':'')+'" data-mod="'+mod+'" data-type="view" onclick="this.classList.toggle('on')">View</button>';
+    html+='<button class="pt pt-e'+(edit?' on':'')+'" data-mod="'+mod+'" data-type="edit" onclick="this.classList.toggle('on')">Edit</button>';
     html+='</div></div>';
   }
   document.getElementById('eu-perms').innerHTML=html;
@@ -3347,43 +3388,34 @@ async function saveUser(){
   for(const mod of mods){
     const vb=document.querySelector('#eu-perms button[data-mod="'+mod+'"][data-type="view"]');
     const eb=document.querySelector('#eu-perms button[data-mod="'+mod+'"][data-type="edit"]');
-    if(!vb) continue;
-    await sb.from('user_permissions').upsert(
-      {user_id:id,module:mod,can_view:vb.classList.contains('on'),can_edit:eb.classList.contains('on'),set_by:_currentUser.id},
-      {onConflict:'user_id,module'}
-    );
+    if(!vb)continue;
+    await sb.from('user_permissions').upsert({user_id:id,module:mod,can_view:vb.classList.contains('on'),can_edit:eb.classList.contains('on'),set_by:_currentUser.id},{onConflict:'user_id,module'});
   }
-  closeShellModal('modal-edit-user');
-  shellToast('User updated','s'); loadAdminUsers();
+  closeShellModal('modal-edit-user');shellToast('User updated','s');loadAdminUsers();
 }
 
 async function doInvite(){
   const name=document.getElementById('inv-name').value.trim();
   const email=document.getElementById('inv-email').value.trim();
-  const role=document.getElementById('inv-role').value;
-  if(!name||!email){ shellToast('Please fill in all fields','d'); return; }
-  shellToast('Go to Supabase → Authentication → Invite user to send the invite to '+email,'i');
+  if(!name||!email){shellToast('Fill in all fields','d');return;}
+  shellToast('Go to Supabase → Auth → Users → Invite: '+email,'i');
 }
 
-// ── MODALS & TOAST ────────────────────────────────────────────────
-function openShellModal(id){ document.getElementById(id).classList.add('open'); }
-function closeShellModal(id){ document.getElementById(id).classList.remove('open'); }
-document.addEventListener('click', e => { if(e.target.classList.contains('shell-modal')) e.target.classList.remove('open'); });
+function openShellModal(id){document.getElementById(id)?.classList.add('open');}
+function closeShellModal(id){document.getElementById(id)?.classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('shell-modal'))e.target.classList.remove('open');});
 
 let _st;
 function shellToast(msg,type){
-  type=type||'s';
-  const c={s:'#38a169',d:'#e53e3e',i:'#5b4fcf'};
-  const el=document.getElementById('shell-toast');
+  type=type||'s';const c={s:'#38a169',d:'#e53e3e',i:'#5b4fcf'};
+  const el=document.getElementById('shell-toast');if(!el)return;
   el.innerHTML='<div style="width:20px;height:20px;border-radius:50%;background:'+c[type]+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg></div><span>'+msg+'</span>';
-  el.classList.add('show');
-  clearTimeout(_st);_st=setTimeout(()=>el.classList.remove('show'),3200);
+  el.classList.add('show');clearTimeout(_st);_st=setTimeout(()=>el.classList.remove('show'),3200);
 }
-
-// showPage intercepted via window.load listener below
 
 boot();
 
 </script>
+
 </body>
 </html>
