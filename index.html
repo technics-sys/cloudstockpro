@@ -556,7 +556,8 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
       <div class="lf-panel" id="panel-su">
         <div class="lf-title">Start free trial</div>
         <div class="lf-sub">15 days full access. No credit card needed.</div>
-        <div class="lf-group"><label class="lf-label">Full name</label><input type="text" class="lf-input" id="su-name" placeholder="Your full name"></div>
+        <div class="lf-group"><label class="lf-label">Company name</label><input type="text" class="lf-input" id="su-company" placeholder="e.g. Naoki Restaurant"></div>
+        <div class="lf-group"><label class="lf-label">Your full name</label><input type="text" class="lf-input" id="su-name" placeholder="Your full name"></div>
         <div class="lf-group"><label class="lf-label">Email</label><input type="email" class="lf-input" id="su-email" placeholder="you@company.com"></div>
         <div class="lf-group"><label class="lf-label">Password</label>
           <div class="lf-pw">
@@ -1910,33 +1911,73 @@ function renderHistory(){} // replaced by renderDedLogPage and renderRsLogPage
 
 // ── CRUD ─────────────────────────────────────────────────────────
 function openAdd(){openModal('add-modal');}
-function saveItem(){
+async function saveItem(){
   const name=document.getElementById('f-name').value.trim();if(!name)return;
-  const newId=nextId++;const item={id:newId,name,category:document.getElementById('f-cat').value,unit:document.getElementById('f-unit').value||'pcs',qty:parseInt(document.getElementById('f-qty').value)||50,threshold:parseInt(document.getElementById('f-thresh').value)||10,supplier:document.getElementById('f-supplier').value.trim(),sku:genSKU(name,document.getElementById('f-cat').value,newId)};
-  items.push(item);txHistory.unshift({ts:new Date(),name:item.name,category:item.category,action:'Added',change:item.qty,newQty:item.qty});
-  closeModal('add-modal');document.getElementById('f-name').value='';document.getElementById('f-unit').value='';document.getElementById('f-qty').value='50';document.getElementById('f-supplier').value='';
-  renderTable();toast(`"${item.name}" added`,'s');
+  const cat=document.getElementById('f-cat').value;
+  const unit=document.getElementById('f-unit').value||'pcs';
+  const qty=parseFloat(document.getElementById('f-qty').value)||50;
+  const threshold=parseFloat(document.getElementById('f-thresh').value)||10;
+  const supplier=document.getElementById('f-supplier').value.trim();
+  // Generate temp id for SKU
+  const tempId=nextId++;
+  const sku=genSKU(name,cat,tempId);
+  // Save to Supabase if connected
+  if(typeof sb!=='undefined' && _companyId){
+    const {data,error}=await sb.from('stock_items').insert({
+      name,category:cat,unit,qty,threshold,supplier,sku,company_id:_companyId
+    }).select().single();
+    if(error){toast('Error saving: '+error.message,'d');return;}
+    const item={id:data.id,dbId:data.id,name:data.name,category:data.category,unit:data.unit,qty:data.qty,threshold:data.threshold,supplier:data.supplier||'',sku:data.sku};
+    items.push(item);
+    txHistory.unshift({ts:new Date(),name:item.name,category:item.category,action:'Added',change:item.qty,newQty:item.qty});
+  } else {
+    // Fallback: in-memory only
+    const item={id:tempId,name,category:cat,unit,qty,threshold,supplier,sku};
+    items.push(item);
+    txHistory.unshift({ts:new Date(),name:item.name,category:item.category,action:'Added',change:item.qty,newQty:item.qty});
+  }
+  closeModal('add-modal');
+  document.getElementById('f-name').value='';document.getElementById('f-unit').value='';
+  document.getElementById('f-qty').value='50';document.getElementById('f-supplier').value='';
+  renderTable();updateStats();renderDashboard();
+  toast(`"${name}" added`,'s');
 }
 function openEdit(id){
   const i=items.find(x=>x.id===id);
   document.getElementById('e-id').value=id;document.getElementById('e-name').value=i.name;document.getElementById('e-cat').value=i.category;document.getElementById('e-unit').value=i.unit;document.getElementById('e-qty').value=i.qty;const disp=document.getElementById('e-qty-display');if(disp)disp.textContent=i.qty+' '+i.unit;const skuDisp=document.getElementById('e-sku-display');if(skuDisp)skuDisp.textContent=i.sku||'—';document.getElementById('e-thresh').value=i.threshold;document.getElementById('e-supplier').value=i.supplier||'';
   openModal('edit-modal');
 }
-function updateItem(){
-  const id=parseInt(document.getElementById('e-id').value),item=items.find(i=>i.id===id);
-  // qty is intentionally NOT updated here — use Restock or Deduct pages
-  item.name=document.getElementById('e-name').value.trim()||item.name;
-  item.category=document.getElementById('e-cat').value;
-  item.unit=document.getElementById('e-unit').value||item.unit;
-  item.threshold=parseFloat(document.getElementById('e-thresh').value)||10;
-  item.supplier=document.getElementById('e-supplier').value.trim();
+async function updateItem(){
+  const id=document.getElementById('e-id').value;
+  const item=items.find(i=>i.id==id||i.dbId==id);
+  if(!item)return;
+  const name=document.getElementById('e-name').value.trim()||item.name;
+  const category=document.getElementById('e-cat').value;
+  const unit=document.getElementById('e-unit').value||item.unit;
+  const threshold=parseFloat(document.getElementById('e-thresh').value)||10;
+  const supplier=document.getElementById('e-supplier').value.trim();
+  // Update Supabase
+  if(typeof sb!=='undefined' && item.dbId){
+    const {error}=await sb.from('stock_items').update({name,category,unit,threshold,supplier}).eq('id',item.dbId);
+    if(error){toast('Error updating: '+error.message,'d');return;}
+  }
+  // Update local
+  item.name=name;item.category=category;item.unit=unit;item.threshold=threshold;item.supplier=supplier;
   closeModal('edit-modal');renderTable();toast('Item updated','s');
 }
-function deleteItem(id){
-  const item=items.find(i=>i.id===id);if(!confirm(`Delete "${item.name}"?`))return;
-  items=items.filter(i=>i.id!==id);if(cart[id]){delete cart[id];renderCart();}
+async function deleteItem(id){
+  const item=items.find(i=>i.id===id||i.dbId===id);
+  if(!item||!confirm(`Delete "${item.name}"?`))return;
+  // Delete from Supabase
+  if(typeof sb!=='undefined' && item.dbId){
+    const {error}=await sb.from('stock_items').delete().eq('id',item.dbId);
+    if(error){toast('Error deleting: '+error.message,'d');return;}
+  }
+  items=items.filter(i=>i.id!==id&&i.dbId!==id);
+  if(cart[id]){delete cart[id];renderCart();}
   txHistory.unshift({ts:new Date(),name:item.name,category:item.category,action:'Deleted',change:-item.qty,newQty:0});
-  renderTable();toast(`"${item.name}" deleted`,'d');
+  renderTable();updateStats();renderDashboard();
+  toast(`"${item.name}" deleted`,'d');
 }
 
 // ── PASTE ────────────────────────────────────────────────────────
@@ -3098,7 +3139,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let _currentUser=null, _userProfile=null, _userPerms={};
+let _currentUser=null, _userProfile=null, _userPerms={}, _companyId=null;
 
 async function boot(){
   try{
@@ -3128,7 +3169,8 @@ async function loadProfile(user){
     console.log('Using temp profile - check RLS policies in Supabase');
   }
   _userProfile=p;
-  console.log('User role:',_userProfile?.role);
+  _companyId=p?.company_id||null;
+  console.log('User role:',_userProfile?.role,'company:',_companyId);
   const MODS=['dashboard','stock','deductions','restock','po','suppliers','costing','logs','admin_console'];
   // Always give full access based on role — don't rely on RPC
   const role=_userProfile?.role||'viewer';
@@ -3180,8 +3222,32 @@ function showAppScreen(){
   }
   // Subscription check
   checkSubStatus();
-  // Init app
+  // Load items from Supabase then init app
+  await loadItemsFromDB();
   if(typeof initApp==='function')initApp();
+}
+
+async function loadItemsFromDB(){
+  if(!_companyId){console.log('No company_id yet');return;}
+  try{
+    const {data,error}=await sb.from('stock_items').select('*').eq('company_id',_companyId).order('name');
+    if(error){console.log('loadItems error:',error);return;}
+    if(!data||!data.length){console.log('No items yet');return;}
+    // Map DB rows to app format
+    if(typeof items !== 'undefined'){
+      items.length=0; // clear existing
+      data.forEach(row=>{
+        items.push({
+          id:row.id, dbId:row.id,
+          name:row.name, category:row.category,
+          unit:row.unit, qty:parseFloat(row.qty),
+          threshold:parseFloat(row.threshold||10),
+          supplier:row.supplier||'', sku:row.sku||''
+        });
+      });
+      console.log('Loaded',items.length,'items from Supabase');
+    }
+  }catch(e){console.log('loadItemsFromDB error:',e);}
 }
 
 async function checkSubStatus(){
@@ -3234,15 +3300,16 @@ async function doLogin(){
 }
 
 async function doSignUp(){
+  const company=document.getElementById('su-company').value.trim();
   const name=document.getElementById('su-name').value.trim();
   const email=document.getElementById('su-email').value.trim();
   const pw=document.getElementById('su-pw').value;
   const cf=document.getElementById('su-confirm').value;
-  if(!name||!email||!pw){showErr('Please fill in all fields.');return;}
+  if(!company||!name||!email||!pw){showErr('Please fill in all fields.');return;}
   if(pw.length<8){showErr('Password must be at least 8 characters.');return;}
   if(pw!==cf){showErr('Passwords do not match.');return;}
   setLoad('su-btn','su-spin','su-txt',true);
-  const {error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name}}});
+  const {error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name,company_name:company}}});
   setLoad('su-btn','su-spin','su-txt',false);
   if(error){showErr(error.message);return;}
   showSuc('Account created! Check your email to confirm, then sign in.');
