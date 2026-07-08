@@ -3209,8 +3209,9 @@ async function showAppScreen(){
   const un=document.querySelector('.user-name');const ur=document.querySelector('.user-role');const uav=document.querySelector('.user-av');
   const shortName = name.includes('@') ? name.split('@')[0] : name.split(' ').slice(0,2).join(' ');
   if(un)un.textContent=shortName;if(ur)ur.textContent=role.replace(/_/g,' ');if(uav)uav.textContent=name.charAt(0).toUpperCase();
-  // Add admin nav item if admin
-  if(role==='admin'){
+  // Add admin nav item ONLY for system admin (no company or TECH AT WORK LTD)
+  const isSystemAdmin = role==='admin' && _currentUser?.email === 'technic.itservices@gmail.com';
+  if(isSystemAdmin){
     const nav=document.querySelector('nav');
     if(nav&&!document.getElementById('admin-nav-btn')){
       const sep=document.createElement('div');sep.className='nav-lbl';sep.textContent='Admin';
