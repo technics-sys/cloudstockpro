@@ -604,17 +604,7 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
 
 <!-- ══════════════ SIDEBAR ══════════════ -->
 <aside class="sidebar">
-  <div class="logo">
-    <div class="logo-row">
-      <div class="logo-gem">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      </div>
-      <div>
-        <div class="logo-name">CloudStock Pro</div>
-        <div class="logo-sub">Stock Control</div>
-      </div>
-    </div>
-  </div>
+  <div class="logo" style="display:none"></div>
   <nav class="nav">
     <div class="nav-lbl">Overview</div>
     <button class="nav-item active" onclick="showPage('dashboard',this)">
@@ -3169,11 +3159,14 @@ function showAppScreen(){
   const role=_userProfile?.role||'viewer';
   const av=document.getElementById('topbar-av');const tn=document.getElementById('topbar-name');const tr=document.getElementById('topbar-role');
   if(av)av.textContent=name.charAt(0).toUpperCase();
-  if(tn)tn.textContent=name;
+  // Show first name only, or email prefix if no full name
+  const displayName = name.includes('@') ? name.split('@')[0] : name.split(' ')[0];
+  if(tn)tn.textContent=displayName;
   if(tr)tr.textContent=role.replace(/_/g,' ');
   // Sidebar user info
   const un=document.querySelector('.user-name');const ur=document.querySelector('.user-role');const uav=document.querySelector('.user-av');
-  if(un)un.textContent=name;if(ur)ur.textContent=role.replace(/_/g,' ');if(uav)uav.textContent=name.charAt(0).toUpperCase();
+  const shortName = name.includes('@') ? name.split('@')[0] : name.split(' ').slice(0,2).join(' ');
+  if(un)un.textContent=shortName;if(ur)ur.textContent=role.replace(/_/g,' ');if(uav)uav.textContent=name.charAt(0).toUpperCase();
   // Add admin nav item if admin
   if(role==='admin'){
     const nav=document.querySelector('nav');
@@ -3349,12 +3342,24 @@ async function loadAdminUsers(){
 }
 
 async function upgradeSub(uid){if(!confirm('Confirm payment received?'))return;await sb.from('subscriptions').update({plan:'monthly',expires_at:new Date(Date.now()+30*864e5).toISOString()}).eq('user_id',uid);shellToast('Upgraded ✓','s');loadAdminUsers();}
-async function extendTrial(uid){const {data:s}=await sb.from('subscriptions').select('expires_at').eq('user_id',uid).single();const base=s&&new Date(s.expires_at)>new Date()?new Date(s.expires_at):new Date();await sb.from('subscriptions').update({plan:'trial',expires_at:new Date(base.getTime()+15*864e5).toISOString()}).eq('user_id',uid);shellToast('Extended 15 days','s');loadAdminUsers();}
+async function extendTrial(uid){
+  const {data:s,error:se}=await sb.from('subscriptions').select('*').eq('user_id',uid).single();
+  console.log('extendTrial sub:',s,'error:',se);
+  const base=s&&new Date(s.expires_at)>new Date()?new Date(s.expires_at):new Date();
+  const newExp=new Date(base.getTime()+15*864e5).toISOString();
+  if(s){
+    await sb.from('subscriptions').update({plan:'trial',expires_at:newExp}).eq('user_id',uid);
+  } else {
+    await sb.from('subscriptions').insert({user_id:uid,plan:'trial',started_at:new Date().toISOString(),expires_at:newExp});
+  }
+  shellToast('Trial extended 15 days ✓','s');loadAdminUsers();
+}
 async function cancelSub(uid){if(!confirm('Cancel?'))return;await sb.from('subscriptions').update({plan:'cancelled',expires_at:new Date().toISOString()}).eq('user_id',uid);shellToast('Cancelled','s');loadAdminUsers();}
 async function toggleStatus(uid,active){if(!confirm((active?'Suspend':'Reactivate')+' this user?'))return;await sb.from('profiles').update({is_active:!active}).eq('id',uid);shellToast('Done','s');loadAdminUsers();}
 
 async function loadRolePerms(){
-  const {data:perms}=await sb.from('role_permissions').select('*').order('role');
+  const {data:perms,error:rpe}=await sb.from('role_permissions').select('*').order('role');
+  console.log('Role perms:',perms?.length,'error:',rpe);
   const roles=['admin','manager','stock_controller','store_keeper','viewer'];
   const mods=['dashboard','stock','deductions','restock','po','suppliers','costing','logs'];
   const wrap=document.getElementById('admin-roles-wrap');if(!wrap)return;
