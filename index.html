@@ -1609,7 +1609,7 @@ function genSKU(name,cat,id){
   const nameCode=name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4).padEnd(4,'X');
   return `CSP-${catCode}-${nameCode}-${String(id).padStart(4,'0')}`;
 }
-(()=>{const s=new Set();Object.entries(RAW).forEach(([cat,list])=>list.forEach(([name,unit])=>{const k=name+'|'+cat;if(s.has(k))return;s.add(k);const id=nextId++;items.push({id,name,category:cat,unit,qty:50,threshold:10,supplier:'',sku:genSKU(name,cat,id)});}));})();
+// Items start empty
 
 document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
@@ -3125,10 +3125,17 @@ async function loadProfile(user){
   let {data:p,error:pErr}=await sb.from('profiles').select('*').eq('id',user.id).single();
   console.log('Profile read:',p,'error:',pErr);
   if(!p){
-    const {data:np}=await sb.from('profiles').insert({
+    // Try insert
+    const {data:np,error:npErr}=await sb.from('profiles').insert({
       id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true
     }).select().single();
+    console.log('Profile insert:',np,'error:',npErr);
     p=np;
+  }
+  // If still no profile, create a temporary one from user metadata
+  if(!p){
+    p={id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true};
+    console.log('Using temp profile - check RLS policies in Supabase');
   }
   _userProfile=p;
   console.log('User role:',_userProfile?.role);
