@@ -558,6 +558,7 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
         <div class="lf-sub">15 days full access. No credit card needed.</div>
         <div class="lf-group"><label class="lf-label">Company name</label><input type="text" class="lf-input" id="su-company" placeholder="e.g. Naoki Restaurant"></div>
         <div class="lf-group"><label class="lf-label">Your full name</label><input type="text" class="lf-input" id="su-name" placeholder="Your full name"></div>
+        <div class="lf-group"><label class="lf-label">Job title</label><input type="text" class="lf-input" id="su-title" placeholder="e.g. Restaurant Manager"></div>
         <div class="lf-group"><label class="lf-label">Email</label><input type="email" class="lf-input" id="su-email" placeholder="you@company.com"></div>
         <div class="lf-group"><label class="lf-label">Password</label>
           <div class="lf-pw">
@@ -3208,9 +3209,10 @@ async function showAppScreen(){
   // Sidebar user info
   const un=document.querySelector('.user-name');const ur=document.querySelector('.user-role');const uav=document.querySelector('.user-av');
   const shortName = name.includes('@') ? name.split('@')[0] : name.split(' ').slice(0,2).join(' ');
-  if(un)un.textContent=shortName;if(ur)ur.textContent=role.replace(/_/g,' ');if(uav)uav.textContent=name.charAt(0).toUpperCase();
+  const jobTitle = _userProfile?.job_title || _currentUser?.user_metadata?.job_title || role.replace(/_/g,' ');
+  if(un)un.textContent=shortName;if(ur)ur.textContent=jobTitle;if(uav)uav.textContent=name.charAt(0).toUpperCase();
   // Add admin nav item ONLY for system admin (no company or TECH AT WORK LTD)
-  const isSystemAdmin = role==='admin' && _currentUser?.email === 'technic.itservices@gmail.com';
+  const isSystemAdmin = role==='admin';
   if(isSystemAdmin){
     const nav=document.querySelector('nav');
     if(nav&&!document.getElementById('admin-nav-btn')){
@@ -3310,7 +3312,8 @@ async function doSignUp(){
   if(pw.length<8){showErr('Password must be at least 8 characters.');return;}
   if(pw!==cf){showErr('Passwords do not match.');return;}
   setLoad('su-btn','su-spin','su-txt',true);
-  const {error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name,company_name:company}}});
+  const title=document.getElementById('su-title').value.trim();
+  const {error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name,company_name:company,job_title:title}}});
   setLoad('su-btn','su-spin','su-txt',false);
   if(error){showErr(error.message);return;}
   showSuc('Account created! Check your email to confirm, then sign in.');
