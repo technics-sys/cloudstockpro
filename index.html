@@ -527,9 +527,9 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
   </div>
   <div class="lr">
     <div class="lf-wrap">
-      <div class="lf-tabs">
-        <button class="lf-tab active" id="tab-si" onclick="switchTab('si')">Sign in</button>
-        <button class="lf-tab" id="tab-su" onclick="switchTab('su')">Sign up</button>
+      <div style="margin-bottom:24px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:#0d1225;letter-spacing:-.5px">CloudStock Pro</div>
+        <div style="font-size:13px;color:#5a6380;margin-top:4px">Sign in to your account</div>
       </div>
       <div class="lf-err" id="lf-err"></div>
       <div class="lf-suc" id="lf-suc"></div>
@@ -553,27 +553,10 @@ textarea.fi{resize:vertical;min-height:100px;font-family:var(--mono);font-size:1
           <button class="lf-btn" onclick="doReset()" style="margin-top:0">Send reset link</button>
         </div>
       </div>
-      <div class="lf-panel" id="panel-su">
-        <div class="lf-title">Start free trial</div>
-        <div class="lf-sub">15 days full access. No credit card needed.</div>
-        <div class="lf-group"><label class="lf-label">Company name</label><input type="text" class="lf-input" id="su-company" placeholder="e.g. Naoki Restaurant"></div>
-        <div class="lf-group"><label class="lf-label">Your full name</label><input type="text" class="lf-input" id="su-name" placeholder="Your full name"></div>
-        <div class="lf-group"><label class="lf-label">Job title</label><input type="text" class="lf-input" id="su-title" placeholder="e.g. Restaurant Manager"></div>
-        <div class="lf-group"><label class="lf-label">Email</label><input type="email" class="lf-input" id="su-email" placeholder="you@company.com"></div>
-        <div class="lf-group"><label class="lf-label">Password</label>
-          <div class="lf-pw">
-            <input type="password" class="lf-input" id="su-pw" placeholder="Min. 8 characters">
-            <button class="lf-pw-toggle" onclick="tpw('su-pw')" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-          </div>
-        </div>
-        <div class="lf-group"><label class="lf-label">Confirm password</label><input type="password" class="lf-input" id="su-confirm" placeholder="Repeat password"></div>
-        <button class="lf-btn" id="su-btn" onclick="doSignUp()">
-          <span id="su-txt">Create free account</span><div class="lf-spinner" id="su-spin"></div>
-        </button>
-      </div>
-      <div class="lf-trial">
-        <div class="lf-trial-t">⏱ 15-Day Free Trial</div>
-        <div class="lf-trial-d">Full access for 15 days. Contact TECH AT WORK LTD to upgrade.</div>
+      
+      <div style="margin-top:16px;text-align:center;font-size:11px;color:#9ca3ba;">
+        Contact <strong style="color:#5b4fcf">TECH AT WORK LTD</strong> to get access<br>
+        +230 5 735 1067 · technic.itservices@gmail.com
       </div>
       <div class="lf-powered">Powered by <strong>TECH AT WORK LTD</strong></div>
     </div>
@@ -3200,6 +3183,7 @@ async function showAppScreen(){
   // Topbar user info
   const name=_userProfile?.full_name||_currentUser?.email||'User';
   const role=_userProfile?.role||'viewer';
+  console.log('showAppScreen — email:',_currentUser?.email,'role:',role,'company:',_companyId);
   const av=document.getElementById('topbar-av');const tn=document.getElementById('topbar-name');const tr=document.getElementById('topbar-role');
   if(av)av.textContent=name.charAt(0).toUpperCase();
   // Show first name only, or email prefix if no full name
