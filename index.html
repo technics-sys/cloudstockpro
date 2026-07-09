@@ -3136,21 +3136,36 @@ async function boot(){
 
 async function loadProfile(user){
   _currentUser=user;
-  // Try reading profile
+  // SYSTEM ADMIN — always gets full access regardless of DB
+  const ADMIN_EMAIL = 'technic.itservices@gmail.com';
+  if(user.email === ADMIN_EMAIL){
+    _userProfile = {
+      id: user.id,
+      full_name: 'Jonathan Delaitre',
+      role: 'admin',
+      is_active: true,
+      company_id: null
+    };
+    _companyId = null;
+    // Still try to read from DB to get company_id but don't block on it
+    try{
+      const {data:p}=await sb.from('profiles').select('*').eq('id',user.id).single();
+      if(p){ _userProfile=p; _userProfile.role='admin'; _companyId=p.company_id; }
+    }catch(e){}
+    console.log('System admin logged in');
+    return;
+  }
+  // Regular user — read profile from DB
   let {data:p,error:pErr}=await sb.from('profiles').select('*').eq('id',user.id).single();
   console.log('Profile read:',p,'error:',pErr);
   if(!p){
-    // Try insert
-    const {data:np,error:npErr}=await sb.from('profiles').insert({
+    const {data:np}=await sb.from('profiles').insert({
       id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true
     }).select().single();
-    console.log('Profile insert:',np,'error:',npErr);
     p=np;
   }
-  // If still no profile, create a temporary one from user metadata
   if(!p){
     p={id:user.id,full_name:user.user_metadata?.full_name||user.email,role:'viewer',is_active:true};
-    console.log('Using temp profile - check RLS policies in Supabase');
   }
   _userProfile=p;
   _companyId=p?.company_id||null;
